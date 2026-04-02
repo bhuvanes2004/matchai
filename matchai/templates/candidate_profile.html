@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:800px">
+    <h2 class="fw-bold mb-4"><i class="fas fa-user text-primary me-2"></i>My Profile</h2>
+
+    <!-- Profile Strength -->
+    <div class="card-custom mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0">Profile Strength</h6>
+                <span class="fw-bold {% if strength >= 70 %}text-success{% elif strength >= 40 %}text-warning{% else %}text-danger{% endif %}">{{ strength }}%</span>
+            </div>
+            {% set s_class = 'strength-low' if strength < 40 else ('strength-medium' if strength < 70 else 'strength-high') %}
+            <div class="strength-bar {{ s_class }}">
+                <div class="fill" style="width:{{ strength }}%"></div>
+            </div>
+            <small class="text-muted mt-1 d-block">
+                {% if strength < 50 %}Complete your profile and upload a resume to improve your strength.
+                {% elif strength < 80 %}Almost there! Fill in remaining fields.
+                {% else %}Your profile looks great!{% endif %}
+            </small>
+        </div>
+    </div>
+
+    <!-- Profile Form -->
+    <form method="POST">
+        <div class="form-section">
+            <h4><i class="fas fa-id-card text-primary me-2"></i>Personal Information</h4>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label-custom">Full Name</label>
+                    <input type="text" class="form-control" name="name" value="{{ user.name }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label-custom">Email (read-only)</label>
+                    <input type="email" class="form-control" value="{{ user.email }}" readonly style="background:var(--gray-light)">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label-custom">Phone</label>
+                    <input type="text" class="form-control" name="phone" value="{{ user.phone }}" placeholder="+1-555-0000">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label-custom">Location</label>
+                    <input type="text" class="form-control" name="location" value="{{ user.location }}" placeholder="City, State">
+                </div>
+                <div class="col-12">
+                    <label class="form-label-custom">Bio</label>
+                    <textarea class="form-control" name="bio" rows="3" placeholder="Tell us about yourself...">{{ user.bio }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary-custom btn-lg w-100">
+            <i class="fas fa-save me-2"></i>Save Changes
+        </button>
+    </form>
+
+    <!-- Resume Info -->
+    {% if resume %}
+    <div class="card-custom mt-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3"><i class="fas fa-file-alt text-primary me-2"></i>Resume Information</h5>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label-custom">Detected Skills</label>
+                    <div>
+                        {% for skill in resume.extracted_skills.split(',') %}
+                        <span class="skill-tag">{{ skill.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label-custom">Education</label>
+                    <p class="text-muted small mb-0" style="white-space:pre-line">{{ resume.education }}</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label-custom">Experience</label>
+                    <p class="text-muted small mb-0" style="white-space:pre-line">{{ resume.experience }}</p>
+                </div>
+            </div>
+            <a href="{{ url_for('upload_resume') }}" class="btn btn-outline-custom btn-sm mt-3">
+                <i class="fas fa-sync me-1"></i>Update Resume
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="card-custom mt-4">
+        <div class="card-body text-center py-4">
+            <i class="fas fa-file-upload fa-3x text-muted mb-3 d-block"></i>
+            <h6 class="fw-bold">No resume uploaded yet</h6>
+            <p class="text-muted small">Upload your resume to auto-fill your profile and get job matches.</p>
+            <a href="{{ url_for('upload_resume') }}" class="btn btn-primary-custom">
+                <i class="fas fa-upload me-1"></i>Upload Resume
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

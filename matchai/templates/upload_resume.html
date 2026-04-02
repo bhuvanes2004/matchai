@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Upload Resume{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:700px">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold"><i class="fas fa-file-upload text-primary me-2"></i>Upload Your Resume</h2>
+        <p class="text-muted">Upload a PDF resume and our AI will automatically extract your skills, education, and experience.</p>
+    </div>
+
+    <div class="card-custom">
+        <div class="card-body p-4">
+            <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                <div class="upload-area" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt d-block"></i>
+                    <h5 class="fw-bold mb-2">Drag & drop your resume here</h5>
+                    <p class="text-muted mb-3">or click to browse files</p>
+                    <input type="file" name="resume" id="fileInput" accept=".pdf" class="d-none" required>
+                    <button type="button" class="btn btn-outline-custom" id="browseBtn">
+                        <i class="fas fa-folder-open me-1"></i>Browse Files
+                    </button>
+                    <p class="text-muted small mt-2 mb-0">PDF files only, max 16MB</p>
+                </div>
+                <div id="fileInfo" class="d-none mt-3 p-3 rounded-3" style="background:var(--primary-bg)">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-file-pdf text-danger" style="font-size:1.5rem"></i>
+                            <div>
+                                <div class="fw-semibold" id="fileName"></div>
+                                <small class="text-muted" id="fileSize"></small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" id="removeFile">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-custom w-100 mt-4 btn-lg" id="uploadBtn" disabled>
+                    <i class="fas fa-magic me-2"></i>Upload & Analyze Resume
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- What we extract -->
+    <div class="card-custom mt-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3"><i class="fas fa-info-circle text-primary me-2"></i>What We Extract</h5>
+            <div class="row g-3">
+                <div class="col-sm-4 text-center p-3">
+                    <i class="fas fa-code fa-2x text-primary mb-2 d-block"></i>
+                    <h6 class="fw-bold">Skills</h6>
+                    <small class="text-muted">Technical and soft skills from your resume</small>
+                </div>
+                <div class="col-sm-4 text-center p-3">
+                    <i class="fas fa-graduation-cap fa-2x text-success mb-2 d-block"></i>
+                    <h6 class="fw-bold">Education</h6>
+                    <small class="text-muted">Degrees, certifications, and institutions</small>
+                </div>
+                <div class="col-sm-4 text-center p-3">
+                    <i class="fas fa-briefcase fa-2x text-warning mb-2 d-block"></i>
+                    <h6 class="fw-bold">Experience</h6>
+                    <small class="text-muted">Work history and roles</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const browseBtn = document.getElementById('browseBtn');
+const fileInfo = document.getElementById('fileInfo');
+const fileName = document.getElementById('fileName');
+const fileSize = document.getElementById('fileSize');
+const removeFile = document.getElementById('removeFile');
+const uploadBtn = document.getElementById('uploadBtn');
+
+browseBtn.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('click', (e) => { if (e.target === dropZone) fileInput.click(); });
+
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        showFileInfo(e.dataTransfer.files[0]);
+    }
+});
+
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) showFileInfo(fileInput.files[0]);
+});
+
+function showFileInfo(file) {
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+        alert('Only PDF files are accepted.');
+        return;
+    }
+    fileName.textContent = file.name;
+    fileSize.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+    fileInfo.classList.remove('d-none');
+    dropZone.style.display = 'none';
+    uploadBtn.disabled = false;
+}
+
+removeFile.addEventListener('click', () => {
+    fileInput.value = '';
+    fileInfo.classList.add('d-none');
+    dropZone.style.display = '';
+    uploadBtn.disabled = true;
+});
+</script>
+{% endblock %}

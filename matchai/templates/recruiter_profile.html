@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Profile{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:800px">
+    <h2 class="fw-bold mb-4"><i class="fas fa-user text-primary me-2"></i>My Profile</h2>
+
+    <form method="POST">
+        <div class="form-section">
+            <h4><i class="fas fa-id-card text-primary me-2"></i>Personal Information</h4>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label-custom">Full Name</label>
+                    <input type="text" class="form-control" name="name" value="{{ user.name }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label-custom">Email (read-only)</label>
+                    <input type="email" class="form-control" value="{{ user.email }}" readonly style="background:var(--gray-light)">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label-custom">Phone</label>
+                    <input type="text" class="form-control" name="phone" value="{{ user.phone }}" placeholder="+1-555-0000">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label-custom">Location</label>
+                    <input type="text" class="form-control" name="location" value="{{ user.location }}" placeholder="City, State">
+                </div>
+                <div class="col-12">
+                    <label class="form-label-custom">Company / Bio</label>
+                    <textarea class="form-control" name="bio" rows="3" placeholder="Tell candidates about your company...">{{ user.bio }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary-custom btn-lg w-100">
+            <i class="fas fa-save me-2"></i>Save Changes
+        </button>
+    </form>
+</div>
+{% endblock %}

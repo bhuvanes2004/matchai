@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- ===== HERO ===== -->
+<section class="hero text-center">
+    <div class="container position-relative" style="z-index:1">
+        <div class="animate-in">
+            <span class="badge bg-white text-primary px-3 py-2 mb-3 fw-semibold" style="font-size:.9rem">
+                <i class="fas fa-bolt me-1"></i> AI-Powered Matching
+            </span>
+            <h1 class="mb-3">Find Your Perfect Job<br>with AI Precision</h1>
+            <p class="mb-4 mx-auto" style="max-width:600px">
+                MatchAI uses intelligent skill matching to connect candidates with the right opportunities and help recruiters find the best talent.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ url_for('job_listings') }}" class="btn btn-light btn-lg px-4 fw-semibold">
+                    <i class="fas fa-search me-2"></i>Browse Jobs
+                </a>
+                {% if not session.get('user_id') %}
+                <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg px-4 fw-semibold">
+                    <i class="fas fa-user-plus me-2"></i>Get Started
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row mt-5 pt-3 g-4">
+            <div class="col-6 col-md-3 hero-stat animate-in animate-delay-1">
+                <h2>{{ stats.jobs }}+</h2>
+                <p>Open Positions</p>
+            </div>
+            <div class="col-6 col-md-3 hero-stat animate-in animate-delay-1">
+                <h2>{{ stats.candidates }}+</h2>
+                <p>Candidates</p>
+            </div>
+            <div class="col-6 col-md-3 hero-stat animate-in animate-delay-2">
+                <h2>{{ stats.recruiters }}+</h2>
+                <p>Recruiters</p>
+            </div>
+            <div class="col-6 col-md-3 hero-stat animate-in animate-delay-2">
+                <h2>{{ stats.applications }}+</h2>
+                <p>Applications</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">How MatchAI Works</h2>
+            <p class="text-muted">Three simple steps to your next opportunity</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card-custom h-100 text-center p-4 animate-in animate-delay-1">
+                    <div class="mb-3">
+                        <div class="stat-icon mx-auto" style="background:var(--primary-bg);color:var(--primary)">
+                            <i class="fas fa-file-upload"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">1. Upload Resume</h5>
+                    <p class="text-muted mb-0">Upload your PDF resume and our AI extracts your skills, education, and experience automatically.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom h-100 text-center p-4 animate-in animate-delay-2">
+                    <div class="mb-3">
+                        <div class="stat-icon mx-auto" style="background:#d1fae5;color:var(--success)">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">2. AI Matching</h5>
+                    <p class="text-muted mb-0">Our intelligent algorithm matches your skills against job requirements and calculates a precise match score.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-custom h-100 text-center p-4 animate-in animate-delay-3">
+                    <div class="mb-3">
+                        <div class="stat-icon mx-auto" style="background:#fef3c7;color:var(--warning)">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">3. Get Matched</h5>
+                    <p class="text-muted mb-0">Apply to jobs with a single click. Recruiters see your match score and can shortlist you instantly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURED JOBS ===== -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Latest Job Openings</h2>
+                <p class="text-muted mb-0">Explore opportunities from top recruiters</p>
+            </div>
+            <a href="{{ url_for('job_listings') }}" class="btn btn-outline-custom">View All <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for job in recent_jobs %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card-custom h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="job-type-badge">{{ job.job_type }}</span>
+                            {% if job.salary %}
+                            <small class="text-success fw-semibold">{{ job.salary }}</small>
+                            {% endif %}
+                        </div>
+                        <h5 class="card-title">{{ job.title }}</h5>
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-building me-1"></i>{{ job.recruiter_name }}
+                            <span class="mx-2">|</span>
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ job.location or 'Remote' }}
+                        </p>
+                        <p class="text-muted small mb-3" style="flex:1">
+                            {{ job.description[:120] }}{% if job.description|length > 120 %}...{% endif %}
+                        </p>
+                        <div class="mb-3">
+                            {% for skill in job.skills_required.split(',')[:4] %}
+                            <span class="skill-tag">{{ skill.strip() }}</span>
+                            {% endfor %}
+                            {% set skill_count = job.skills_required.split(',')|length %}
+                            {% if skill_count > 4 %}
+                            <span class="skill-tag" style="background:#f1f5f9;color:var(--gray)">+{{ skill_count - 4 }} more</span>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('job_detail', job_id=job.id) }}" class="btn btn-primary-custom w-100">
+                            View Details <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ===== CTA SECTION ===== -->
+<section class="py-5 text-center">
+    <div class="container">
+        <div class="card-custom p-5" style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:var(--white);border:none">
+            <h2 class="fw-bold mb-3">Ready to Find Your Match?</h2>
+            <p class="mb-4 opacity-75" style="max-width:500px;margin:0 auto">Join MatchAI today and let our AI-powered platform connect you with the perfect opportunities.</p>
+            {% if not session.get('user_id') %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-5 fw-semibold">
+                <i class="fas fa-rocket me-2"></i>Get Started Free
+            </a>
+            {% else %}
+            <a href="{{ url_for('job_listings') }}" class="btn btn-light btn-lg px-5 fw-semibold">
+                <i class="fas fa-search me-2"></i>Browse Jobs Now
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

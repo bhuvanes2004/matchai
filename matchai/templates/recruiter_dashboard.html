@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar d-none d-lg-block">
+        <div class="px-3 mb-3">
+            <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:var(--primary-bg)">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:42px;height:42px">
+                    {{ session.name[0]|upper }}
+                </div>
+                <div>
+                    <div class="fw-bold small">{{ session.name }}</div>
+                    <div class="text-muted" style="font-size:.75rem">Recruiter</div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-section">Main</div>
+        <a href="{{ url_for('recruiter_dashboard') }}" class="nav-link active">
+            <i class="fas fa-th-large"></i> Dashboard
+        </a>
+        <a href="{{ url_for('post_job') }}" class="nav-link">
+            <i class="fas fa-plus-circle"></i> Post Job
+        </a>
+        <div class="nav-section">Account</div>
+        <a href="{{ url_for('recruiter_profile') }}" class="nav-link">
+            <i class="fas fa-user"></i> Profile
+        </a>
+        <a href="{{ url_for('notifications') }}" class="nav-link">
+            <i class="fas fa-bell"></i> Notifications
+            {% if unread_notifications > 0 %}
+                <span class="badge bg-danger ms-auto">{{ unread_notifications }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('logout') }}" class="nav-link text-danger">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-1">Recruiter Dashboard</h3>
+                <p class="text-muted mb-0">Manage your job postings and candidates</p>
+            </div>
+            <a href="{{ url_for('post_job') }}" class="btn btn-primary-custom">
+                <i class="fas fa-plus me-2"></i>Post New Job
+            </a>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card blue">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ job_stats|length }}</div>
+                            <div class="stat-label">Active Jobs</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card cyan">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ total_apps }}</div>
+                            <div class="stat-label">Total Applications</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card green">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ total_shortlisted }}</div>
+                            <div class="stat-label">Shortlisted</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card orange">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ total_pending }}</div>
+                            <div class="stat-label">Pending Review</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Application Chart -->
+            <div class="col-lg-4">
+                <div class="card-custom h-100">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-chart-bar text-primary me-2"></i>Applications per Job</h5>
+                        <canvas id="jobsChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jobs Posted -->
+            <div class="col-lg-8">
+                <div class="card-custom">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-list text-primary me-2"></i>Your Job Postings</h5>
+                        {% if job_stats %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Job Title</th>
+                                        <th>Applications</th>
+                                        <th>Shortlisted</th>
+                                        <th>Pending</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in job_stats %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('job_detail', job_id=job.id) }}" class="fw-semibold text-dark">{{ job.title }}</a>
+                                            <br><small class="text-muted">{{ job.location or 'Remote' }}</small>
+                                        </td>
+                                        <td><span class="badge bg-primary-subtle text-primary">{{ job.app_count }}</span></td>
+                                        <td><span class="badge bg-success-subtle text-success">{{ job.shortlisted }}</span></td>
+                                        <td><span class="badge bg-warning-subtle text-warning">{{ job.pending }}</span></td>
+                                        <td>
+                                            <a href="{{ url_for('manage_applications', job_id=job.id) }}" class="btn btn-outline-custom btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-briefcase fa-3x mb-3 d-block opacity-50"></i>
+                            <p>No jobs posted yet. Create your first job listing!</p>
+                            <a href="{{ url_for('post_job') }}" class="btn btn-primary-custom btn-sm">Post a Job</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Applications -->
+        {% if recent_apps %}
+        <div class="mt-4">
+            <div class="card-custom">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-clock text-primary me-2"></i>Recent Applications</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Job</th>
+                                    <th>Match Score</th>
+                                    <th>Status</th>
+                                    <th>Applied</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in recent_apps %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:32px;height:32px;font-size:.8rem">
+                                                {{ app.candidate_name[0]|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold small">{{ app.candidate_name }}</div>
+                                                <div class="text-muted" style="font-size:.75rem">{{ app.candidate_email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="small">{{ app.job_title }}</td>
+                                    <td>
+                                        {% if app.match_score >= 70 %}
+                                        <span class="match-badge match-high">{{ app.match_score }}%</span>
+                                        {% elif app.match_score >= 40 %}
+                                        <span class="match-badge match-medium">{{ app.match_score }}%</span>
+                                        {% else %}
+                                        <span class="match-badge match-low">{{ app.match_score }}%</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="status-badge status-{{ app.status }}">{{ app.status }}</span></td>
+                                    <td class="text-muted small">{{ app.applied_at[:10] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('jobsChart');
+    if (ctx) {
+        const jobNames = [{% for j in job_stats %}"{{ j.title[:20] }}"{% if not loop.last %},{% endif %}{% endfor %}];
+        const appCounts = [{% for j in job_stats %}{{ j.app_count }}{% if not loop.last %},{% endif %}{% endfor %}];
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: jobNames,
+                datasets: [{
+                    label: 'Applications',
+                    data: appCounts,
+                    backgroundColor: 'rgba(26,86,219,0.7)',
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                    x: { ticks: { maxRotation: 45 } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

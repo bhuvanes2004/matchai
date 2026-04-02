@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar d-none d-lg-block">
+        <div class="px-3 mb-3">
+            <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:var(--primary-bg)">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width:42px;height:42px">
+                    {{ session.name[0]|upper }}
+                </div>
+                <div>
+                    <div class="fw-bold small">{{ session.name }}</div>
+                    <div class="text-muted" style="font-size:.75rem">Candidate</div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-section">Main</div>
+        <a href="{{ url_for('candidate_dashboard') }}" class="nav-link active">
+            <i class="fas fa-th-large"></i> Dashboard
+        </a>
+        <a href="{{ url_for('job_listings') }}" class="nav-link">
+            <i class="fas fa-briefcase"></i> Browse Jobs
+        </a>
+        <a href="{{ url_for('upload_resume') }}" class="nav-link">
+            <i class="fas fa-file-upload"></i> Upload Resume
+        </a>
+        <div class="nav-section">Account</div>
+        <a href="{{ url_for('candidate_profile') }}" class="nav-link">
+            <i class="fas fa-user"></i> Profile
+        </a>
+        <a href="{{ url_for('notifications') }}" class="nav-link">
+            <i class="fas fa-bell"></i> Notifications
+            {% if unread_notifications > 0 %}
+                <span class="badge bg-danger ms-auto">{{ unread_notifications }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('logout') }}" class="nav-link text-danger">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-1">Welcome back, {{ session.name.split()[0] }}!</h3>
+                <p class="text-muted mb-0">Here's your job search overview</p>
+            </div>
+            <a href="{{ url_for('job_listings') }}" class="btn btn-primary-custom">
+                <i class="fas fa-search me-2"></i>Find Jobs
+            </a>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card blue">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ applications|length }}</div>
+                            <div class="stat-label">Total Applications</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-paper-plane"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card green">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ applications|selectattr('status', 'equalto', 'shortlisted')|list|length }}</div>
+                            <div class="stat-label">Shortlisted</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card orange">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ applications|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="stat-card cyan">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ strength }}%</div>
+                            <div class="stat-label">Profile Strength</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Profile Strength + Chart -->
+            <div class="col-lg-4">
+                <div class="card-custom h-100">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-chart-pie text-primary me-2"></i>Application Status</h5>
+                        <canvas id="statusChart" height="200"></canvas>
+                        <hr>
+                        <h6 class="fw-bold mb-2">Profile Strength</h6>
+                        {% set s_class = 'strength-low' if strength < 40 else ('strength-medium' if strength < 70 else 'strength-high') %}
+                        <div class="strength-bar {{ s_class }} mb-2">
+                            <div class="fill" style="width:{{ strength }}%"></div>
+                        </div>
+                        <small class="text-muted">
+                            {% if strength < 50 %}
+                            <i class="fas fa-info-circle me-1"></i>Upload a resume and complete your profile to improve.
+                            {% elif strength < 80 %}
+                            <i class="fas fa-info-circle me-1"></i>Almost there! Fill in remaining profile fields.
+                            {% else %}
+                            <i class="fas fa-check-circle text-success me-1"></i>Excellent! Your profile is well-optimized.
+                            {% endif %}
+                        </small>
+                        {% if not resume %}
+                        <a href="{{ url_for('upload_resume') }}" class="btn btn-primary-custom btn-sm w-100 mt-3">
+                            <i class="fas fa-file-upload me-1"></i>Upload Resume
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applications List -->
+            <div class="col-lg-8">
+                <div class="card-custom">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-history text-primary me-2"></i>Your Applications</h5>
+                        {% if applications %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Job Title</th>
+                                        <th>Company</th>
+                                        <th>Match</th>
+                                        <th>Status</th>
+                                        <th>Applied</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for app in applications %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('job_detail', job_id=app.job_id) }}" class="fw-semibold text-dark">
+                                                {{ app.title }}
+                                            </a>
+                                        </td>
+                                        <td class="text-muted small">{{ app.recruiter_name }}</td>
+                                        <td>
+                                            {% if app.match_score >= 70 %}
+                                            <span class="match-badge match-high"><i class="fas fa-star"></i> {{ app.match_score }}%</span>
+                                            {% elif app.match_score >= 40 %}
+                                            <span class="match-badge match-medium"><i class="fas fa-star-half-alt"></i> {{ app.match_score }}%</span>
+                                            {% else %}
+                                            <span class="match-badge match-low"><i class="far fa-star"></i> {{ app.match_score }}%</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-{{ app.status }}">{{ app.status }}</span>
+                                        </td>
+                                        <td class="text-muted small">{{ app.applied_at[:10] }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block opacity-50"></i>
+                            <p>No applications yet. Start applying to jobs!</p>
+                            <a href="{{ url_for('job_listings') }}" class="btn btn-primary-custom btn-sm">Browse Jobs</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommended Jobs -->
+        {% if recommended %}
+        <div class="mt-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-magic text-primary me-2"></i>Recommended For You</h5>
+            <div class="row g-3">
+                {% for job in recommended %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card-custom h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="job-type-badge">{{ job.job_type }}</span>
+                                {% if job.match_score >= 70 %}
+                                <span class="match-badge match-high">{{ job.match_score }}%</span>
+                                {% elif job.match_score >= 40 %}
+                                <span class="match-badge match-medium">{{ job.match_score }}%</span>
+                                {% else %}
+                                <span class="match-badge match-low">{{ job.match_score }}%</span>
+                                {% endif %}
+                            </div>
+                            <h6 class="fw-bold">{{ job.title }}</h6>
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>{{ job.location or 'Remote' }}
+                                {% if job.salary %}<span class="mx-2">|</span><i class="fas fa-dollar-sign me-1"></i>{{ job.salary }}{% endif %}
+                            </p>
+                            <div class="mb-3">
+                                {% for skill in job.skills_required.split(',')[:3] %}
+                                <span class="skill-tag">{{ skill.strip() }}</span>
+                                {% endfor %}
+                            </div>
+                            <a href="{{ url_for('job_detail', job_id=job.id) }}" class="btn btn-outline-custom btn-sm mt-auto">View Job</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Resume Skills -->
+        {% if resume %}
+        <div class="mt-4">
+            <div class="card-custom">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-tags text-primary me-2"></i>Your Detected Skills</h5>
+                    <div>
+                        {% for skill in resume.extracted_skills.split(',') %}
+                        <span class="skill-tag">{{ skill.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                    {% if resume.education %}
+                    <hr>
+                    <h6 class="fw-bold"><i class="fas fa-graduation-cap text-primary me-2"></i>Education</h6>
+                    <p class="text-muted small mb-0">{{ resume.education }}</p>
+                    {% endif %}
+                    {% if resume.experience %}
+                    <hr>
+                    <h6 class="fw-bold"><i class="fas fa-briefcase text-primary me-2"></i>Experience</h6>
+                    <p class="text-muted small mb-0">{{ resume.experience }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Application status chart
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('statusChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Shortlisted', 'Rejected'],
+                datasets: [{
+                    data: [{{ status_counts.pending }}, {{ status_counts.shortlisted }}, {{ status_counts.rejected }}],
+                    backgroundColor: ['#f59e0b', '#10b981', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 15, usePointStyle: true, pointStyleWidth: 10 } }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

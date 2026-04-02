@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card animate-in">
+        <div class="text-center mb-4">
+            <div class="mb-3">
+                <span class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width:60px;height:60px;background:var(--primary-bg)">
+                    <i class="fas fa-user-plus text-primary" style="font-size:1.5rem"></i>
+                </span>
+            </div>
+            <h2>Create Account</h2>
+            <p class="text-muted">Join MatchAI and start matching</p>
+        </div>
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="mb-3">
+                <label class="form-label-custom" for="name">Full Name</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-user text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0" id="name" name="name" placeholder="John Doe" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label-custom" for="email">Email Address</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-envelope text-muted"></i></span>
+                    <input type="email" class="form-control border-start-0" id="email" name="email" placeholder="you@example.com" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label-custom" for="password">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-lock text-muted"></i></span>
+                    <input type="password" class="form-control border-start-0" id="password" name="password" placeholder="Min 6 characters" required minlength="6">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label-custom" for="confirm_password">Confirm Password</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-lock text-muted"></i></span>
+                    <input type="password" class="form-control border-start-0" id="confirm_password" name="confirm_password" placeholder="Repeat password" required>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label-custom">I am a:</label>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="role" id="roleCandidate" value="candidate" checked>
+                        <label class="btn btn-outline-primary w-100 py-3" for="roleCandidate">
+                            <i class="fas fa-user-tie d-block mb-1" style="font-size:1.2rem"></i>
+                            Candidate
+                        </label>
+                    </div>
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="role" id="roleRecruiter" value="recruiter">
+                        <label class="btn btn-outline-primary w-100 py-3" for="roleRecruiter">
+                            <i class="fas fa-building d-block mb-1" style="font-size:1.2rem"></i>
+                            Recruiter
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                <i class="fas fa-user-plus me-2"></i>Create Account
+            </button>
+        </form>
+        <div class="text-center mt-4">
+            <p class="text-muted mb-0">Already have an account? <a href="{{ url_for('login') }}" class="fw-semibold">Sign in</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
