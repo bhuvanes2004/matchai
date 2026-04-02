@@ -2,7 +2,7 @@
 
 ## 📌 Overview
 
-Match Maker AI is a smart web-based application that connects **job seekers (candidates)** with **recruiters** using an AI-powered resume matching system.
+Match Maker AI is a smart web-based application that connects **job seekers (candidates)** with **recruiters** using an AI-powered resume matching system
 The platform analyzes resumes, extracts skills, and matches them with job descriptions to provide a **compatibility score**.
 
 ---
